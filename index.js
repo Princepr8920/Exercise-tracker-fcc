@@ -65,4 +65,50 @@ app.post("/api/users", (req, res) => {
   });
 });
 
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  let leanObj = await userId.findOne({ _id: req.body._id }).lean();
+  let counted = leanObj.log.length > 0 ? leanObj.log.length : 1;
+
+  let updatedUser = await userId
+    .findOneAndUpdate(
+      { _id: req.body._id },
+      {
+        count: counted,
+        $push: {
+          log: {
+            description: req.body.description,
+            duration: req.body.duration,
+            date: req.body.date || new Date(),
+          },
+        },
+      },
+      { new: true }
+    )
+    .lean();
+
+  let filtredLog = FILTER.filterInfo(updatedUser.log[0], ["_id"]);
+  let filtredProfile = FILTER.filterInfo(updatedUser, ["count", "__v", "log"]);
+  let { date, description, duration } = filtredLog;
+  res.json({
+    username: filtredProfile.username,
+    description,
+    duration,
+    date,
+    _id: filtredProfile._id,
+  });
+});
+
+app.get("/api/users", async (req, res) => {
+  let users = await userId.find().lean();
+  let filtred = FILTER.filterInfo(users, ["log", "count"]);
+  res.json(filtred);
+});
+
+app.get("/api/users/:_id/logs", async (req, res) => {
+  let id = req.params._id;
+  let user = await userId.findOne({ id }).lean();
+    let filtred = FILTER.filterInfo(user, ["__v"]);
+  res.json(filtred)
+});
+
 
