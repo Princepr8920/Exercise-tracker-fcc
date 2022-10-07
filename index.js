@@ -7,9 +7,8 @@ const logger = require("morgan")
 const filterdInfo = require("./filter");
 const FILTER = new filterdInfo();
 require('dotenv').config()
-app.use(logger("dev"));
 app.use(cors())
-
+app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'))
 app.get('/', (req, res) => {
@@ -87,8 +86,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       { new: true }
     )
     .lean(); 
-
-  let filtredLog = FILTER.filterInfo(updatedUser?.log[0], ["_id"]);
+ 
+  let filtredLog = FILTER.filterInfo(updatedUser?.log[updatedUser?.log.length-1], ["_id"]);
   let filtredProfile = FILTER.filterInfo(updatedUser, ["count", "__v", "log"]);
   let { date, description, duration } = filtredLog;
   res.json({
