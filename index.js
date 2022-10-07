@@ -3,9 +3,11 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const logger = require("morgan")
 const filterdInfo = require("./filter");
 const FILTER = new filterdInfo();
 require('dotenv').config()
+app.use(logger("dev"));
 app.use(cors())
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -65,10 +67,10 @@ app.post("/api/users", (req, res) => {
   });
 });
 
-app.post("/api/users/:_id/exercises", async (req, res) => {
+app.post("/api/users/:_id/exercises", async (req, res) => { 
   let leanObj = await userId.findOne({ _id: req.body._id }).lean();
-  let counted = leanObj.log.length > 0 ? leanObj.log.length : 1;
-
+  let counted = leanObj?.log.length > 0 ? leanObj?.log.length : 1;
+  
   let updatedUser = await userId
     .findOneAndUpdate(
       { _id: req.body._id },
@@ -84,17 +86,17 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       },
       { new: true }
     )
-    .lean();
+    .lean(); 
 
-  let filtredLog = FILTER.filterInfo(updatedUser.log[0], ["_id"]);
+  let filtredLog = FILTER.filterInfo(updatedUser?.log[0], ["_id"]);
   let filtredProfile = FILTER.filterInfo(updatedUser, ["count", "__v", "log"]);
   let { date, description, duration } = filtredLog;
   res.json({
-    username: filtredProfile.username,
+    username: filtredProfile?.username,
     description,
     duration,
     date,
-    _id: filtredProfile._id,
+    _id: filtredProfile?._id,
   });
 });
 
