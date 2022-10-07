@@ -108,9 +108,15 @@ app.get("/api/users", async (req, res) => {
 
 app.get("/api/users/:_id/logs", async (req, res) => {
   let id = req.params._id;
-  let user = await userId.findOne({ id }).lean();
+  console.log(id)
+  let user = await userId.findOne({ _id:id }).lean();
+
+  if(user){
     let filtred = FILTER.filterInfo(user, ["__v"]);
   res.json(filtred)
+  }else{
+    res.send("user not found")
+  }
 });
 
 
