@@ -24,7 +24,7 @@ const listener = app.listen(process.env.PORT || 2000, () => {
 });
 
 let userSchema = mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  username: { type: String, required: true},
   count: { type: Number, default: 0 },
   log: [
     {
@@ -42,8 +42,6 @@ app.post("/api/users", (req, res) => {
   userId.findOne({ username: username }, "-count", (err, user) => {
     if (err) {
       console.error(err);
-    } else if (user) {
-      res.status(409).send("<h1>username already taken, Try another</h1>");
     } else {
       let newUser = new userId({
         username: username,
