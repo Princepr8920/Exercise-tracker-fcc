@@ -3,26 +3,24 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const logger = require("morgan")
+const logger = require("morgan");
 const filterdInfo = require("./filter");
 const FILTER = new filterdInfo();
-require('dotenv').config()
-app.use(cors())
+require("dotenv").config();
+app.use(cors());
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static('public'))
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/views/index.html')
-}); 
+app.use(express.static("public"));
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/views/index.html");
+});
 
 mongoose.connect(process.env.MY_DB, { useNewUrlParser: true }, () => {
   console.log("Database in connected 🧠");
 });
 
 const listener = app.listen(process.env.PORT || 2000, () => {
-  console.log(
-    "Your app is listening on port " + listener.address().port
-  );
+  console.log("Your app is listening on port " + listener.address().port);
 });
 
 let userSchema = mongoose.Schema({
@@ -66,30 +64,26 @@ app.post("/api/users", (req, res) => {
   });
 });
 
-app.post("/api/users/:_id/exercises", async (req, res) => { 
-  let leanObj = await userId.findOne({ _id: req.body._id }).lean();
-  let counted = leanObj?.log.length > 0 ? leanObj?.log.length : 1;
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  let user = await userId.findOne({ _id: req.body._id });
+  let counted = user?.log.length > 0 ? user?.log.length : 1;
+
+  user.count = counted
+
+  user?.log.push({
+    description: req.body.description,
+    duration: req.body.duration,
+    date: req.body.date || new Date(),
+  });
   
-  let updatedUser = await userId
-    .findOneAndUpdate(
-      { _id: req.body._id },
-      {
-        count: counted,
-        $push: {
-          log: {
-            description: req.body.description,
-            duration: req.body.duration,
-            date: req.body.date || new Date(),
-          },
-        },
-      },
-      { new: true }
-    )
-    .lean(); 
- 
-  let filtredLog = FILTER.filterInfo(updatedUser?.log[updatedUser?.log.length-1], ["_id"]);
-  let filtredProfile = FILTER.filterInfo(updatedUser, ["count", "__v", "log"]);
+
+ let saved = await user.save()
+ console.log(saved._doc)
+
+  let filtredLog = FILTER.filterInfo(saved?._doc?.log[saved?._doc?.log.length-1], ["_id"]);
+  let filtredProfile = FILTER.filterInfo(saved?._doc, ["count", "__v", "log"]);
   let { date, description, duration } = filtredLog;
+  console.log(date,description,duration)
   res.json({
     username: filtredProfile?.username,
     description,
@@ -107,15 +101,13 @@ app.get("/api/users", async (req, res) => {
 
 app.get("/api/users/:_id/logs", async (req, res) => {
   let id = req.params._id;
-  console.log(id)
-  let user = await userId.findOne({ _id:id }).lean();
+  console.log(id);
+  let user = await userId.findOne({ _id: id }).lean();
 
-  if(user){
+  if (user) {
     let filtred = FILTER.filterInfo(user, ["__v"]);
-  res.json(filtred)
-  }else{
-    res.send("user not found")
+    res.json(filtred);
+  } else {
+    res.send("user not found");
   }
 });
-
-
