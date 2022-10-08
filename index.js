@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const logger = require("morgan");
 const filterdInfo = require("./filter");
 const FILTER = new filterdInfo();
+const moment = require("moment");
 require("dotenv").config();
 app.use(cors());
 app.use(logger("dev"));
@@ -24,12 +25,12 @@ const listener = app.listen(process.env.PORT || 2000, () => {
 });
 
 let userSchema = mongoose.Schema({
-  username: { type: String, required: true},
+  username: { type: String, required: true },
   count: { type: Number, default: 0 },
   log: [
     {
       description: { type: String },
-      date: { type: Date, default: new Date() },
+      date: { type: Date, default: new Date()  },
       duration: { type: Number },
     },
   ],
@@ -39,25 +40,19 @@ let userId = mongoose.model("userId", userSchema);
 
 app.post("/api/users", (req, res) => {
   let username = req.body.username;
-  userId.findOne({ username: username }, (err, user) => {
+  let newUser = new userId({
+    username: username,
+  });
+  newUser.save((err, profile) => {
     if (err) {
-      console.error(err);
+      console.log(err);
     } else {
-      let newUser = new userId({
-        username: username,
-      });
-      newUser.save((err, profile) => {
-        if (err) {
-          console.log(err);
-        } else {
-          let filtredProfile = FILTER.filterInfo(profile._doc, [
-            "count",
-            "__v",
-            "log",
-          ]);
-          res.status(200).json(filtredProfile);
-        }
-      });
+      let filtredProfile = FILTER.filterInfo(profile._doc, [
+        "count",
+        "__v",
+        "log",
+      ]);
+      res.status(200).json(filtredProfile);
     }
   });
 });
@@ -66,14 +61,15 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let user = await userId.findOne({ _id: req.body._id });
   if (user) {
     let counted = user?.log.length > 0 ? user?.log.length : 1;
-    let dur = req.body.duration === Number ? req.body.duration : null
-    let des = req.body.description
+    let dur = req.body.duration === Number ? req.body.duration : null;
+    let des = req.body.description;
+    let enteryDate = req.body.date || new Date() ;
+ 
     user.count = counted;
-
     user?.log.push({
       description: des,
       duration: dur,
-      date: req.body.date || new Date(),
+      date: enteryDate,
     });
     let saved = await user.save();
     console.log(saved._doc);
@@ -93,21 +89,21 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       username: filtredProfile?.username,
       description,
       duration,
-      date,
+      date:date.toDateString(),
       _id: filtredProfile?._id,
     });
-  }else{
-    return res.sendStatus(500)
+  } else {
+    return res.sendStatus(500);
   }
 });
 
 app.get("/api/users", async (req, res) => {
   let users = await userId.find().lean();
-  if(users){
-      let filtred = FILTER.filterInfo(users, ["log", "count"]);
-  res.json(filtred);
-  }else{
-    res.sendStatus(404)
+  if (users) {
+    let filtred = FILTER.filterInfo(users, ["log", "count"]);
+    res.json(filtred);
+  } else {
+    res.sendStatus(404);
   }
 });
 
