@@ -66,12 +66,13 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let user = await userId.findOne({ _id: req.body._id });
   if (user) {
     let counted = user?.log.length > 0 ? user?.log.length : 1;
-
+    let dur = req.body.duration === Number ? req.body.duration : null
+    let des = req.body.description
     user.count = counted;
 
     user?.log.push({
-      description: req.body.description,
-      duration: req.body.duration,
+      description: des,
+      duration: dur,
       date: req.body.date || new Date(),
     });
     let saved = await user.save();
