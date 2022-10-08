@@ -39,7 +39,7 @@ let userId = mongoose.model("userId", userSchema);
 
 app.post("/api/users", (req, res) => {
   let username = req.body.username;
-  userId.findOne({ username: username }, "-count", (err, user) => {
+  userId.findOne({ username: username }, (err, user) => {
     if (err) {
       console.error(err);
     } else {
