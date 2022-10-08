@@ -41,7 +41,7 @@ app.post("/api/users", (req, res) => {
   let username = req.body.username;
   userId.findOne({ username: username }, "-count", (err, user) => {
     if (err) {
-      console.log(err);
+      console.error(err);
     } else if (user) {
       res.status(409).send("<h1>username already taken, Try another</h1>");
     } else {
@@ -66,37 +66,50 @@ app.post("/api/users", (req, res) => {
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let user = await userId.findOne({ _id: req.body._id });
-  let counted = user?.log.length > 0 ? user?.log.length : 1;
+  if (user) {
+    let counted = user?.log.length > 0 ? user?.log.length : 1;
 
-  user.count = counted
+    user.count = counted;
 
-  user?.log.push({
-    description: req.body.description,
-    duration: req.body.duration,
-    date: req.body.date || new Date(),
-  });
-  
+    user?.log.push({
+      description: req.body.description,
+      duration: req.body.duration,
+      date: req.body.date || new Date(),
+    });
+    let saved = await user.save();
+    console.log(saved._doc);
 
- let saved = await user.save()
- console.log(saved._doc)
+    let filtredLog = FILTER.filterInfo(
+      saved?._doc?.log[saved?._doc?.log.length - 1],
+      ["_id"]
+    );
+    let filtredProfile = FILTER.filterInfo(saved?._doc, [
+      "count",
+      "__v",
+      "log",
+    ]);
+    let { date, description, duration } = filtredLog;
 
-  let filtredLog = FILTER.filterInfo(saved?._doc?.log[saved?._doc?.log.length-1], ["_id"]);
-  let filtredProfile = FILTER.filterInfo(saved?._doc, ["count", "__v", "log"]);
-  let { date, description, duration } = filtredLog;
-  console.log(date,description,duration)
-  res.json({
-    username: filtredProfile?.username,
-    description,
-    duration,
-    date,
-    _id: filtredProfile?._id,
-  });
+    return res.json({
+      username: filtredProfile?.username,
+      description,
+      duration,
+      date,
+      _id: filtredProfile?._id,
+    });
+  }else{
+    return res.sendStatus(500)
+  }
 });
 
 app.get("/api/users", async (req, res) => {
   let users = await userId.find().lean();
-  let filtred = FILTER.filterInfo(users, ["log", "count"]);
+  if(users){
+      let filtred = FILTER.filterInfo(users, ["log", "count"]);
   res.json(filtred);
+  }else{
+    res.sendStatus(404)
+  }
 });
 
 app.get("/api/users/:_id/logs", async (req, res) => {
@@ -108,6 +121,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     let filtred = FILTER.filterInfo(user, ["__v"]);
     res.json(filtred);
   } else {
-    res.send("user not found");
+    res.sendStatus(404);
   }
 });
