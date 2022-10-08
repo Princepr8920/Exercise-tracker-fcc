@@ -61,14 +61,15 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let user = await userId.findOne({ _id: req.body._id });
   if (user) {
     let counted = user?.log.length > 0 ? user?.log.length : 1;
-    let dur = req.body.duration === Number ? req.body.duration : null;
+    let parsedDuration = parseInt(req.body.duration)
+    if(typeof parsedDuration === 'number'){
     let des = req.body.description;
     let enteryDate = req.body.date || new Date() ;
  
     user.count = counted;
     user?.log.push({
       description: des,
-      duration: dur,
+      duration: parsedDuration,
       date: enteryDate,
     });
     let saved = await user.save();
@@ -95,7 +96,17 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   } else {
     return res.sendStatus(500);
   }
+    }else {
+    return res.sendStatus(500);
+  }
+    
 });
+
+
+
+
+
+
 
 app.get("/api/users", async (req, res) => {
   let users = await userId.find().lean();
