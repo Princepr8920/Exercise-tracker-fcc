@@ -29,9 +29,9 @@ let userSchema = mongoose.Schema({
   count: { type: Number, default: 0 },
   log: [
     {
-      description: { type: String ,required:true},
-      date: { type: Date, default: new Date()  },
-      duration: { type: Number  ,required:true},
+      description: { type: String ,required:true,trim:true },
+      date: { type: Date, default: new Date(),trim:true  },
+      duration: {type: Number,required:true,trim:true},
     },
   ],
 });
