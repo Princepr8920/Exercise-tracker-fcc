@@ -30,7 +30,7 @@ let userSchema = mongoose.Schema({
   log: [
     {
       description: { type: String ,required:true,trim:true },
-      date: { type: Date, default: new Date(),trim:true  },
+      date: { type:  String, default: new Date(),trim:true  },
       duration: {type: Number,required:true,trim:true},
     },
   ],
@@ -90,7 +90,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       username: filtredProfile?.username,
       description,
       duration,
-      date:date.toDateString(),
+      date:new Date(date).toDateString(),
       _id: filtredProfile?._id,
     });
   } else {
