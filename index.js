@@ -24,18 +24,19 @@ const listener = app.listen(process.env.PORT || 2000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
 
+let exerciseSchema = {
+  description: { type: String, required: true, trim: true },
+  date: { type: String, default: new Date(), trim: true },
+  duration: { type: Number, required: true, trim: true },
+};
+
 let userSchema = mongoose.Schema({
   username: { type: String, required: true },
   count: { type: Number, default: 0 },
-  log: [
-    {
-      description: { type: String ,required:true,trim:true },
-      date: { type:  String, default: new Date(),trim:true  },
-      duration: {type: Number,required:true,trim:true},
-    },
-  ],
+  log: [exerciseSchema],
 });
 
+let exercise = mongoose.model("exercise", exerciseSchema);
 let userId = mongoose.model("userId", userSchema);
 
 app.post("/api/users", (req, res) => {
@@ -58,73 +59,49 @@ app.post("/api/users", (req, res) => {
 });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  let user = await userId.findOne({ _id: req.body._id });
+  let { duration, description, date, _id } = req.body;
+  let user = await userId.findOne({ _id: _id }).lean();
+  let counter = user?.log.length > 0 ? user?.log.length : 0;
+
   if (user) {
-    let counted = user?.log.length > 0 ? user?.log.length : 1;
-    let parsedDuration = parseInt(req.body.duration)
-    if(typeof parsedDuration === 'number'){
-    let des = req.body.description;
-    let enteryDate = req.body.date || new Date() ;
- 
-    user.count = counted;
-    user?.log.push({
-      description: des,
-      duration: parsedDuration,
-      date: enteryDate,
-    });
-    let saved = await user.save();
-    console.log(saved._doc);
-
-    let filtredLog = FILTER.filterInfo(
-      saved?._doc?.log[saved?._doc?.log.length - 1],
-      ["_id"]
-    );
-    let filtredProfile = FILTER.filterInfo(saved?._doc, [
-      "count",
-      "__v",
-      "log",
-    ]);
-    let { date, description, duration } = filtredLog;
-
-    return res.json({
-      username: filtredProfile?.username,
-      description,
+    let newExercise = new exercise({
       duration,
-      date:new Date(date).toDateString(),
-      _id: filtredProfile?._id,
+      description,
+      date:
+        new Date(date).toDateString() !== "Invalid Date"
+          ? new Date(date).toDateString()
+          : new Date().toDateString(),
     });
-  } else {
-    return res.sendStatus(500);
-  }
-    }else {
-    return res.sendStatus(500);
-  }
-    
-});
 
-
-
-
-
-
-
-app.get("/api/users", async (req, res) => {
-  let users = await userId.find().lean();
-  if (users) {
-    let filtred = FILTER.filterInfo(users, ["log", "count"]);
-    res.json(filtred);
-  } else {
-    res.sendStatus(404);
+    let updated = await userId
+      .findByIdAndUpdate(
+        { _id },
+        { count: (counter += 1), $push: { log: newExercise } },
+        { new: true }
+      )
+      .lean();
+    let recentExercise = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
+    let filterJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
+    res.json({ ...filterJson, ...recentExercise });
   }
 });
 
 app.get("/api/users/:_id/logs", async (req, res) => {
   let id = req.params._id;
-  console.log(id);
   let user = await userId.findOne({ _id: id }).lean();
 
   if (user) {
-    let filtred = FILTER.filterInfo(user, ["__v"]);
+    // let filtred = FILTER.filterInfo(user, ["__v"]);
+    res.json(user);
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+app.get("/api/users", async (req, res) => {
+  let users = await userId.find().lean();
+  if (users) {
+    let filtred = FILTER.filterInfo(users, ["log", "count"]);
     res.json(filtred);
   } else {
     res.sendStatus(404);
