@@ -58,6 +58,34 @@ app.post("/api/users", (req, res) => {
   });
 });
 
+// app.post("/api/users/:_id/exercises", async (req, res) => {
+//   let { duration, description, date, _id } = req.body;
+//   let user = await userId.findOne({ _id: _id }).lean();
+//   let counter = user?.log.length > 0 ? user?.log.length : 0;
+
+//   if (user) {
+//     let newExercise = new exercise({
+//       duration,
+//       description,
+//       date:
+//         new Date(date).toDateString() !== "Invalid Date"
+//           ? new Date(date).toDateString()
+//           : new Date().toDateString(),
+//     });
+
+//     let updated = await userId
+//       .findByIdAndUpdate(
+//         { _id },
+//         { count: (counter += 1), $push: { log: newExercise } },
+//         { new: true }
+//       )
+//       .lean();
+//     let recentExercise = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
+//     let filterJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
+//     res.json({ ...filterJson, ...recentExercise });
+//   }
+// });
+
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { duration, description, date, _id } = req.body;
   let user = await userId.findOne({ _id: _id }).lean();
@@ -73,16 +101,12 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           : new Date().toDateString(),
     });
 
-    let updated = await userId
-      .findByIdAndUpdate(
-        { _id },
-        { count: (counter += 1), $push: { log: newExercise } },
-        { new: true }
-      )
-      .lean();
-    let recentExercise = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
-    let filterJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
-    res.json({ ...filterJson, ...recentExercise });
+    let updated = await userId.findByIdAndUpdate(
+      { _id },
+      { count: (counter += 1), $push: { log: newExercise } },
+      { new: true }
+    );
+    res.json(updated)
   }
 });
 
