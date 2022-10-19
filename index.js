@@ -116,7 +116,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       "log",
     ]);
     
-    res.json({...filtredJson,...filtredLog})
+    res.send({...filtredJson,...filtredLog})
+  }else{
+    res.status(404).send('user not found')
   }
 });
 
