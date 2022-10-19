@@ -105,7 +105,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       { _id },
       { count: (counter += 1), $push: { log: newExercise } },
       { new: true }
-    );
+    ).lean();
+    
     res.json(updated)
   }
 });
