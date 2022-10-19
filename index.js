@@ -26,7 +26,7 @@ const listener = app.listen(process.env.PORT || 2000, () => {
 
 let exerciseSchema = {
   description: { type: String, required: true, trim: true },
-  date: { type: String, default: new Date(), trim: true },
+  date: { type: String, trim: true },
   duration: { type: Number, required: true, trim: true },
 };
 
@@ -87,7 +87,9 @@ app.post("/api/users", (req, res) => {
 // });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  let { duration, description, date, _id } = req.body;
+  console.log(req.body)
+  let { duration, description, date} = req.body;
+  let _id = req.body[":_id"]
   let user = await userId.findOne({ _id: _id }).lean();
   let counter = user?.log.length > 0 ? user?.log.length : 0;
 
