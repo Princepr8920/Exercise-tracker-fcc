@@ -93,7 +93,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 
   if (user) {
     let newExercise = new exercise({
-      duration,
+      duration:isNaN(duration) ? null : duration,
       description,
       date:
         new Date(date).toDateString() !== "Invalid Date"
@@ -106,8 +106,17 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       { count: (counter += 1), $push: { log: newExercise } },
       { new: true }
     ).lean();
+
+    let filtredLog = FILTER.filterInfo(updated.log[counter-1], [
+      "_id", 
+    ]);
+    let filtredJson = FILTER.filterInfo(updated, [
+      "count",
+      "__v",
+      "log",
+    ]);
     
-    res.json(updated)
+    res.json({...filtredJson,...filtredLog})
   }
 });
 
