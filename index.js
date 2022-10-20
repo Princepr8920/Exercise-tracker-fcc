@@ -87,40 +87,40 @@ app.post("/api/users", (req, res) => {
 // });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  console.log(req.body)
-  let { duration, description, date} = req.body;
-  let _id = req.body[":_id"]
+  console.log(req.body);
+  let { duration, description, date } = req.body;
+  let _id = req.body[":_id"];
   let user = await userId.findOne({ _id: _id }).lean();
   let counter = user?.log.length > 0 ? user?.log.length : 0;
 
   if (user) {
-    let newExercise = new exercise({
-      duration:isNaN(duration) ? null : duration,
-      description,
-      date:
-        new Date(date).toDateString() !== "Invalid Date"
-          ? new Date(date).toDateString()
-          : new Date().toDateString(),
-    });
+    if (isNaN(duration) || !description || duration === '') {
+      res.status(400).send("invalid format")
+    } else {
+      let newExercise = new exercise({
+        duration: duration,
+        description: description,
+        date:
+          new Date(date).toDateString() !== "Invalid Date"
+            ? new Date(date).toDateString()
+            : new Date().toDateString(),
+      });
 
-    let updated = await userId.findByIdAndUpdate(
-      { _id },
-      { count: (counter += 1), $push: { log: newExercise } },
-      { new: true }
-    ).lean();
+      let updated = await userId
+        .findByIdAndUpdate(
+          { _id },
+          { count: (counter += 1), $push: { log: newExercise } },
+          { new: true }
+        )
+        .lean();
 
-    let filtredLog = FILTER.filterInfo(updated.log[counter-1], [
-      "_id", 
-    ]);
-    let filtredJson = FILTER.filterInfo(updated, [
-      "count",
-      "__v",
-      "log",
-    ]);
-    
-    res.status(200).json({...filtredJson,...filtredLog})
-  }else{
-    res.status(404).send('user not found')
+      let filtredLog = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
+      let filtredJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
+
+      res.status(200).json({ ...filtredJson, ...filtredLog });
+    }
+  } else {
+    res.status(404).send("user not found");
   }
 });
 
