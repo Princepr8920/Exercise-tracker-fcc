@@ -48,12 +48,17 @@ app.post("/api/users", (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      let filtredProfile = FILTER.filterInfo(profile._doc, [
-        "count",
-        "__v",
-        "log",
-      ]);
-      res.status(200).json(filtredProfile);
+      // let filtredProfile = FILTER.filterInfo(profile._doc, [
+      //   "count",
+      //   "__v",
+      //   "log",
+      // ]);
+      let response = {
+        username: profile.username,
+        _id: profile._id,
+      };
+
+      res.status(200).json(response);
     }
   });
 });
@@ -87,7 +92,6 @@ app.post("/api/users", (req, res) => {
 // });
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
-  console.log(req.body);
   let { duration, description, date } = req.body;
   let _id = req.body[":_id"];
   let user = await userId.findOne({ _id: _id }).lean();
