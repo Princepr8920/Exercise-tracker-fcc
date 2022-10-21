@@ -93,7 +93,7 @@ app.post("/api/users", (req, res) => {
 
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { duration, description, date } = req.body;
-  let _id = req.body[":_id"];
+  let _id = req.params._id;
   let user = await userId.findOne({ _id: _id }).lean();
   let counter = user?.log.length > 0 ? user?.log.length : 0;
 
