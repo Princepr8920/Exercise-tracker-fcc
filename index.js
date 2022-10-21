@@ -125,8 +125,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         _id: updated._id,
         date: updated.log[counter - 1].date,
         description: updated.log[counter - 1].description,
-        duration: updated.log[counter - 1].duration,
+        duration: parseInt(updated.log[counter - 1].duration),
       };
+      console.log(typeof response.description)
       res.status(200).json(response);
     }
   } else {
