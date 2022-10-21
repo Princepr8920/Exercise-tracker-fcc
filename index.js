@@ -94,8 +94,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let counter = user?.log.length > 0 ? user?.log.length : 0;
 
   if (user) {
-    if (isNaN(duration) || !description || duration === '') {
-      res.status(400).send("invalid format")
+    if (isNaN(duration) || !description || duration === "") {
+      res.status(400).send("invalid format");
     } else {
       let newExercise = new exercise({
         duration: duration,
@@ -114,10 +114,16 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         )
         .lean();
 
-      let filtredLog = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
-      let filtredJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
-
-      res.status(200).json({ ...filtredJson, ...filtredLog });
+      // let filtredLog = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
+      // let filtredJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);{ ...filtredJson, ...filtredLog }
+      let response = {
+        username: updated.username,
+        _id: updated._id,
+        date: updated.log[counter - 1].date,
+        description: updated.log[counter - 1].description,
+        duration: updated.log[counter - 1].duration,
+      };
+      res.status(200).json(response);
     }
   } else {
     res.status(404).send("user not found");
@@ -130,7 +136,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   if (user) {
     // let filtred = FILTER.filterInfo(user, ["__v"]);
-    res.json(user);
+    res.status(200).json(user);
   } else {
     res.sendStatus(404);
   }
@@ -140,7 +146,7 @@ app.get("/api/users", async (req, res) => {
   let users = await userId.find().lean();
   if (users) {
     let filtred = FILTER.filterInfo(users, ["log", "count"]);
-    res.json(filtred);
+    res.status(200).json(filtred);
   } else {
     res.sendStatus(404);
   }
