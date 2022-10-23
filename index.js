@@ -115,32 +115,32 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   let user = await userId.findOne({ _id: id }).lean();
   if (user) {
-    if (from && to) {
-      let logArr = user.log;
-      let limitedLog = logArr.filter((e) =>
-        new Date(e.date).getTime() >= new Date(from).getTime() &&
-        new Date(e.date).getTime() <= new Date(to).getTime()
-          ? e
-          : ""
-      );
-      if (query.limit) {
-        while (limitedLog.length > query.limit) {
-          limitedLog.pop();
-        }
-      }
+    // if (from && to) {
+    //   let logArr = user.log;
+    //   let limitedLog = logArr.filter((e) =>
+    //     new Date(e.date).getTime() >= new Date(from).getTime() &&
+    //     new Date(e.date).getTime() <= new Date(to).getTime()
+    //       ? e
+    //       : ""
+    //   );
+    //   if (query.limit) {
+    //     while (limitedLog.length > query.limit) {
+    //       limitedLog.pop();
+    //     }
+    //   }
       
-      let response = {
-        _id: user._id,
-        username: user.username,
-        from,
-        to,
-        count: limitedLog.length,
-        log:limitedLog,
-      };
-      res.status(200).json(response);
-    } else {
+    //   let response = {
+    //     _id: user._id,
+    //     username: user.username,
+    //     from,
+    //     to,
+    //     count: limitedLog.length,
+    //     log:limitedLog,
+    //   };
+    //   res.status(200).json(response);
+    // } else {
       res.status(200).json(user);
-    }
+   // }
   } else {
     res.sendStatus(404);
   }
