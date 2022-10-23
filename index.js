@@ -63,34 +63,6 @@ app.post("/api/users", (req, res) => {
   });
 });
 
-// app.post("/api/users/:_id/exercises", async (req, res) => {
-//   let { duration, description, date, _id } = req.body;
-//   let user = await userId.findOne({ _id: _id }).lean();
-//   let counter = user?.log.length > 0 ? user?.log.length : 0;
-
-//   if (user) {
-//     let newExercise = new exercise({
-//       duration,
-//       description,
-//       date:
-//         new Date(date).toDateString() !== "Invalid Date"
-//           ? new Date(date).toDateString()
-//           : new Date().toDateString(),
-//     });
-
-//     let updated = await userId
-//       .findByIdAndUpdate(
-//         { _id },
-//         { count: (counter += 1), $push: { log: newExercise } },
-//         { new: true }
-//       )
-//       .lean();
-//     let recentExercise = FILTER.filterInfo(updated.log[counter - 1], ["_id"]);
-//     let filterJson = FILTER.filterInfo(updated, ["count", "__v", "log"]);
-//     res.json({ ...filterJson, ...recentExercise });
-//   }
-// });
-
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { duration, description, date } = req.body;
   let _id = req.params._id;
@@ -127,7 +99,6 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         description: updated.log[counter - 1].description,
         duration: parseInt(updated.log[counter - 1].duration),
       };
-      console.log(typeof response.description)
       res.status(200).json(response);
     }
   } else {
@@ -137,11 +108,39 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 
 app.get("/api/users/:_id/logs", async (req, res) => {
   let id = req.params._id;
-  let user = await userId.findOne({ _id: id }).lean();
+  let query = req.query;
 
+  let from = query.from.replace(/[-]/g, ",");
+  let to = query.to.replace(/[-]/g, ",");
+
+  let user = await userId.findOne({ _id: id }).lean();
   if (user) {
-    // let filtred = FILTER.filterInfo(user, ["__v"]);
-    res.status(200).json(user);
+    if (from && to) {
+      let logArr = user.log;
+      let limitedLog = logArr.filter((e) =>
+        new Date(e.date).getTime() >= new Date(from).getTime() &&
+        new Date(e.date).getTime() <= new Date(to).getTime()
+          ? e
+          : ""
+      );
+      if (query.limit) {
+        while (limitedLog.length > query.limit) {
+          limitedLog.pop();
+        }
+      }
+      
+      let response = {
+        _id: user._id,
+        username: user.username,
+        from,
+        to,
+        count: limitedLog.length,
+        log:limitedLog,
+      };
+      res.json(response);
+    } else {
+      res.status(200).json(user);
+    }
   } else {
     res.sendStatus(404);
   }
