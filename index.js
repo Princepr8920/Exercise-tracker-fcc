@@ -137,7 +137,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         count: limitedLog.length,
         log:limitedLog,
       };
-      res.json(response);
+      res.status(200).json(response);
     } else {
       res.status(200).json(user);
     }
