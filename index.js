@@ -127,14 +127,16 @@ app.get("/api/users/:_id/logs", async (req, res) => {
              limitedLog.pop();
            }
          }
-     
+
+
+         let filtred = FILTER.filterInfo(limitedLog, ["_id"]);
          let response = {
            _id: user._id,
            username: user.username,
            from,
            to,
            count: limitedLog.length,
-           log:limitedLog,
+           log:filtred,
          };
          res.status(200).json(response);
        } else {
