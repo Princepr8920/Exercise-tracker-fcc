@@ -111,6 +111,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs", async (req, res) => {
   let id = req.params._id;
   let user = await userId.findOne({ _id: id }).lean();
+  let {from ,to,limit} = req.query;
 
   if (user) {
     if (from && to) {
@@ -121,8 +122,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
              ? e
              : ""
          );
-         if (query.limit) {
-           while (limitedLog.length > query.limit) {
+         if (limit) {
+           while (limitedLog.length > limit) {
              limitedLog.pop();
            }
          }
