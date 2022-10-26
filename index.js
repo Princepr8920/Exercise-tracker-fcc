@@ -112,6 +112,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   let user = await userId.findOne({ _id: id }).lean();
   let { from, to, limit } = req.query;
 
+
   if (user) {
     if (from && to) {
       let logArr = user.log;
@@ -131,8 +132,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       let response = {
         _id: user._id,
         username: user.username,
-        from,
-        to,
+        from:new Date(from).toDateString(),
+        to:new Date(to).toDateString(),
         count: limitedLog.length,
         log: filtred,
       };
