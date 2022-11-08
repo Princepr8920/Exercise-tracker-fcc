@@ -1,8 +1,7 @@
 module.exports = class Filter{
   filterInfo(info, out) {
    let exclude = out;
-   let filterdInfo = info;
-   console.log(filterdInfo)
+   let filterdInfo = info; 
    if (Array.isArray(info)) {
      info.forEach((doc) => {
        exclude.forEach((elem) => {
