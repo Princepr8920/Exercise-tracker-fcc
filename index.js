@@ -60,11 +60,11 @@ await client.db("FCC").createCollection("exercise-tracker-db", {
                 description: "des must be a string and is required",
               },
               duration: {
-                bsonType: "int",
+                bsonType: "number",
                 description: "duration must be a number and is required",
               },
               date: {
-                bsonType: "date",
+                bsonType: "string",
                 description: "date must be a number and is required",
               },
             },
