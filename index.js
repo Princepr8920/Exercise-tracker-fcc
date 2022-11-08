@@ -105,7 +105,6 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let _id = new ObjectId(req.params._id);
   let user = await db.findOne({ _id });
   let counter = user?.log?.length > 0 ? user?.log?.length : 0;
-  console.log(duration,date)
 
   if (user) {
     if (isNaN(duration) || !description || duration === "") {
@@ -115,8 +114,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         duration,
         description,
         date: new Date(date) === "Invalid Date" || date === "" ? new Date() : new Date(date),
-      };
-      console.log(new Date(newExercise.date))
+      }; 
       counter += 1;
       db.findOneAndUpdate(
         { _id },
@@ -182,7 +180,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       }
 
   
-      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();return e})
+      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration); return e})
       let response = {
         _id: user._id,
         username: user.username,
@@ -193,8 +191,10 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       };
       res.status(200).json(response);
     } else {
-     user.log.map(e=>{e.date = new Date(e.date).toDateString();return e})
-      res.status(200).json(user);
+    
+     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration) ;return e})
+      console.log(typeof user.log[0].date, typeof user.log[0].duration);
+     res.status(200).json(user);
     }
   } else {
     res.sendStatus(404);
