@@ -105,6 +105,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   let _id = new ObjectId(req.params._id);
   let user = await db.findOne({ _id });
   let counter = user?.log?.length > 0 ? user?.log?.length : 0;
+  console.log(duration,date)
 
   if (user) {
     if (isNaN(duration) || !description || duration === "") {
@@ -113,8 +114,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       let newExercise = {
         duration,
         description,
-        date: new Date(date) !== "Invalid Date" ? new Date(date) : new Date(),
+        date: new Date(date) === "Invalid Date" || date === "" ? new Date() : new Date(date),
       };
+      console.log(new Date(newExercise.date))
       counter += 1;
       db.findOneAndUpdate(
         { _id },
