@@ -170,7 +170,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         }
       }
 
-      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString(); return e})
+      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
       let response = {
         _id: user._id,
         username: user.username,
@@ -181,7 +181,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       };
       return res.status(200).json(response);
     } else {
-     user.log.map(e=>{e.date = new Date(e.date).toDateString(); return e})
+     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
    return res.status(200).json(user);
     }
   } else {
