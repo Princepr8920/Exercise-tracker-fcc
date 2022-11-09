@@ -137,8 +137,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   if (user) {  
     if (new Date(req.query.from) != "Invalid Date" && new Date(req.query.to) != "Invalid Date") {
-      let from = new Date(req.query.from).toISOString();
-      let to = new Date(req.query.to).toISOString();
+    // let from = new Date(req.query.from).toISOString();
+    // let to = new Date(req.query.to).toISOString();
       let ag = await db
         .aggregate([
           { $match: { _id: _id }},
@@ -150,8 +150,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                   as: "filteredLog",
                   cond: {
                     $and: [
-                      { $gte: ["$$filteredLog.date", new Date(from)] },
-                      { $lte: ["$$filteredLog.date", new Date(to)] },
+                      { $gte: ["$$filteredLog.date", new Date(new Date(req.query.from).toISOString())] },
+                      { $lte: ["$$filteredLog.date", new Date(new Date(req.query.to).toISOString())] },
                     ],
                   },  
              
@@ -174,18 +174,18 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       let response = {
         _id: user._id,
         username: user.username,
-        from: new Date(from).toDateString(),
-        to: new Date(to).toDateString(),
+        from: new Date(req.query.from).toDateString(),
+        to: new Date(req.query.to).toDateString(),
         count: ag[0].log.length, 
         log: ag[0].log,
       };
       return res.status(200).json(response);
     } else {
-     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
+     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration);})
    return res.status(200).json(user);
     }
   } else {
-    res.sendStatus(404);
+   return res.sendStatus(404);
   }
 });
 
