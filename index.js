@@ -81,18 +81,6 @@ async function createCollection() {
 
 const db = client.db("FCC").collection("exercise-tracker-db");
 
-// let exerciseSchema = {
-//   description: { type: String, required: true, trim: true },
-//   date: { type: Date, default: new Date() },
-//   duration: { type: Number, required: true, trim: true },
-// };
-
-// let userSchema = mongoose.Schema({
-//   username: { type: String, required: true },
-//   count: { type: Number, default: 0 },
-//   log: [exerciseSchema],
-// });
-
 app.post("/api/users", async (req, res) => {
   let { insertedId } = await db.insertOne({ username: req.body.username });
   let { username, _id } = await db.findOne({ _id: insertedId });
@@ -150,9 +138,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     if (new Date(req.query.from) != "Invalid Date" && new Date(req.query.to) != "Invalid Date") {
       let from = new Date(req.query.from).toISOString();
       let to = new Date(req.query.to).toISOString();
-
-      let logArr = user.log;
-
       let ag = await db
         .aggregate([
           { $match: { _id: _id }},
@@ -167,22 +152,24 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                       { $gte: ["$$filteredLog.date", new Date(from)] },
                       { $lte: ["$$filteredLog.date", new Date(to)] },
                     ],
-                  },
+                  },            
                 } 
               },
-            },
+          //  result:{$sortArray:{input:"log",sortBy:{date:1}}}
+          }
           },
+          // { $sort: {date: 1 } }
         ])
         .toArray();
 
+        console.log(ag)
+
       if (limit && limit > 0) {
         while (ag[0].log.length > limit) {
-          console.log("whille")
           ag[0].log.pop();
         }
       }
 
-  
       ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration); return e})
       console.log(typeof ag[0].log[0].date, typeof ag[0].log[0].duration);
       let response = {
