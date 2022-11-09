@@ -111,6 +111,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         async function (err, document) {
           if (err) return err;
           const { value } = document;
+          
           let response = {
             username: value.username,
             _id: value._id,
@@ -152,26 +153,26 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                       { $gte: ["$$filteredLog.date", new Date(from)] },
                       { $lte: ["$$filteredLog.date", new Date(to)] },
                     ],
-                  },            
+                  },  
+             
                 } 
               },
-          //  result:{$sortArray:{input:"log",sortBy:{date:1}}}
           }
           },
-          // { $sort: {date: 1 } }
         ])
         .toArray();
 
-        console.log(ag)
 
+    
       if (limit && limit > 0) {
         while (ag[0].log.length > limit) {
           ag[0].log.pop();
         }
       }
 
-      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration); return e})
+         let userLog = ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration); return e})
       console.log(typeof ag[0].log[0].date, typeof ag[0].log[0].duration);
+      ag[0].log = userLog
       let response = {
         _id: user._id,
         username: user.username,
@@ -179,19 +180,18 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         to: new Date(to).toDateString(),
         count: ag[0].log.length, 
         log: ag[0].log,
-      };
+      };  
       return res.status(200).json(response);
     } else {
-     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration) ;return e})
-      console.log(typeof user.log[0].date, typeof user.log[0].duration);
+    let userLog = user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration) ;return e})
+      console.log(typeof user.log[2].date, typeof user.log[0].duration);
+      user.log = userLog
    return res.status(200).json(user);
     }
   } else {
     res.sendStatus(404);
   }
 });
-
- 
 
 app.get("/api/users", async (req, res) => {
   let users = await db.find().toArray();
