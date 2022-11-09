@@ -143,17 +143,19 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs", async (req, res) => {
   let _id = new ObjectId(req.params._id);
   let user = await db.findOne({ _id });
-  let { from,to,limit } = req.query;
+  let { limit } = req.query;
 
-  if (user) {
-    if (from && to) {
+
+  if (user) {  
+    if (new Date(req.query.from) != "Invalid Date" && new Date(req.query.to) != "Invalid Date") {
       let from = new Date(req.query.from).toISOString();
       let to = new Date(req.query.to).toISOString();
+
       let logArr = user.log;
 
       let ag = await db
         .aggregate([
-          { $match: { _id: _id } },
+          { $match: { _id: _id }},
           {
             $project: {
               log: {
@@ -166,7 +168,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                       { $lte: ["$$filteredLog.date", new Date(to)] },
                     ],
                   },
-                },
+                } 
               },
             },
           },
@@ -175,42 +177,34 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
       if (limit && limit > 0) {
         while (ag[0].log.length > limit) {
+          console.log("whille")
           ag[0].log.pop();
         }
       }
 
   
       ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration); return e})
+      console.log(typeof ag[0].log[0].date, typeof ag[0].log[0].duration);
       let response = {
         _id: user._id,
         username: user.username,
         from: new Date(from).toDateString(),
         to: new Date(to).toDateString(),
-        count: logArr.length,
+        count: ag[0].log.length, 
         log: ag[0].log,
       };
-      res.status(200).json(response);
+      return res.status(200).json(response);
     } else {
-    
      user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration) ;return e})
       console.log(typeof user.log[0].date, typeof user.log[0].duration);
-     res.status(200).json(user);
+   return res.status(200).json(user);
     }
   } else {
     res.sendStatus(404);
   }
 });
 
-
-
-
-
-
-
-
-
-
-
+ 
 
 app.get("/api/users", async (req, res) => {
   let users = await db.find().toArray();
