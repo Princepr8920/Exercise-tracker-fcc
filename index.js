@@ -119,7 +119,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           let response = {
             username: value.username,
             _id: value._id,
-            date: new Date(value.log[counter - 1].date).toDateString(),
+            date: value.log[counter - 1].date.toDateString(),
             description: value.log[counter - 1].description,
             duration: parseInt(value.log[counter - 1].duration),
           };
