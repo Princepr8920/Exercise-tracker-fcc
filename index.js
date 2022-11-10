@@ -123,7 +123,6 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
             description: value.log[counter - 1].description,
             duration: parseInt(value.log[counter - 1].duration),
           };
-          console.log(typeof response.date, typeof response.duration);
           return res.status(200).json(response);
         }
       );
@@ -166,6 +165,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
           },
         ])
         .toArray();
+ 
 
       if (limit && limit > 0) {
         while (ag[0].log.length > limit) {
@@ -174,7 +174,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       }
 
       ag[0].log.forEach((e) => {
-        e.date = [ new Date(e.date).toDateString()].join('');
+        e.date = e.date.toDateString()
         e.duration = parseInt(e.duration);
       });
 
@@ -189,7 +189,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       return res.status(200).json(response);
     } else {
       user.log.forEach((e) => {
-        e.date =[ new Date(e.date).toDateString()].join('');
+        e.date = e.date.toDateString()
         e.duration = parseInt(e.duration);
       });
       return res.status(200).json(user);
