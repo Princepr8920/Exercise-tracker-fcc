@@ -18,12 +18,12 @@ app.get("/", (req, res) => {
 
 const listener = app.listen(process.env.PORT || 2000, () => {
   console.log("Your app is listening on port " + listener.address().port);
-  connectToDatabase()
+  connectToDatabase();
 });
 
 const client = new MongoClient(process.env.MY_DB);
 
- async function connectToDatabase() {
+async function connectToDatabase() {
   try {
     await client.connect();
     console.log("Database connected successfully 🧠");
@@ -35,7 +35,7 @@ const client = new MongoClient(process.env.MY_DB);
   } catch (error) {
     console.error(error);
   }
-};
+}
 
 async function createCollection() {
   await client.db("FCC").createCollection("exercise-tracker-db", {
@@ -89,10 +89,6 @@ app.post("/api/users", async (req, res) => {
   res.status(200).json(response);
 });
 
-
-
-
-
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { duration, description, date } = req.body;
   let _id = new ObjectId(req.params._id);
@@ -106,8 +102,11 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
       let newExercise = {
         duration,
         description,
-        date: new Date(date) === "Invalid Date" || date === "" ? new Date() : new Date(date),
-      }; 
+        date:
+          new Date(date) === "Invalid Date" || date === ""
+            ? new Date()
+            : new Date(date),
+      };
       counter += 1;
       db.findOneAndUpdate(
         { _id },
@@ -116,7 +115,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         async function (err, document) {
           if (err) return err;
           const { value } = document;
-          
+
           let response = {
             username: value.username,
             _id: value._id,
@@ -139,14 +138,16 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   let user = await db.findOne({ _id });
   let { limit } = req.query;
 
-
-  if (user) {  
-    if (new Date(req.query.from) != "Invalid Date" && new Date(req.query.to) != "Invalid Date") {
+  if (user) {
+    if (
+      new Date(req.query.from) != "Invalid Date" &&
+      new Date(req.query.to) != "Invalid Date"
+    ) {
       let from = new Date(req.query.from).toISOString();
       let to = new Date(req.query.to).toISOString();
       let ag = await db
         .aggregate([
-          { $match: { _id: _id }},
+          { $match: { _id: _id } },
           {
             $project: {
               log: {
@@ -158,41 +159,43 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                       { $gte: ["$$filteredLog.date", new Date(from)] },
                       { $lte: ["$$filteredLog.date", new Date(to)] },
                     ],
-                  },  
-             
-                } 
+                  },
+                },
               },
-          }
+            },
           },
         ])
         .toArray();
 
-
-    
       if (limit && limit > 0) {
         while (ag[0].log.length > limit) {
           ag[0].log.pop();
         }
       }
 
-      ag[0].log.forEach(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
-    
+      ag[0].log.forEach((e) => {
+        e.date = [ new Date(e.date).toDateString()].join('');
+        e.duration = parseInt(e.duration);
+      });
+
       let response = {
         _id: user._id,
         username: user.username,
         from: new Date(from).toDateString(),
         to: new Date(to).toDateString(),
-        count: ag[0].log.length, 
+        count: ag[0].log.length,
         log: ag[0].log,
       };
-
       return res.status(200).json(response);
     } else {
-     user.log.forEach(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration);})
-   return res.status(200).json(user);
+      user.log.forEach((e) => {
+        e.date =[ new Date(e.date).toDateString()].join('');
+        e.duration = parseInt(e.duration);
+      });
+      return res.status(200).json(user);
     }
   } else {
-   return res.sendStatus(404);
+    return res.sendStatus(404);
   }
 });
 
