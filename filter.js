@@ -1,4 +1,4 @@
-module.exports = class Filter{
+class Filter{
   filterInfo(info, out) {
    let exclude = out;
    let filterdInfo = info; 
@@ -20,3 +20,5 @@ module.exports = class Filter{
    return filterdInfo;
  }
 }
+
+module.exports = Filter

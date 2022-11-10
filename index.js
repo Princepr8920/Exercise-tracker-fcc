@@ -18,14 +18,15 @@ app.get("/", (req, res) => {
 
 const listener = app.listen(process.env.PORT || 2000, () => {
   console.log("Your app is listening on port " + listener.address().port);
+  connectToDatabase()
 });
 
 const client = new MongoClient(process.env.MY_DB);
 
-(async function () {
+ async function connectToDatabase() {
   try {
     await client.connect();
-    console.log("database connected successfully 🧠");
+    console.log("Database connected successfully 🧠");
     let collections = await client.db("FCC").listCollections().toArray();
     let collectionExists = collections.map((e) => e.name);
     !collectionExists.includes("exercise-tracker-db")
@@ -34,7 +35,7 @@ const client = new MongoClient(process.env.MY_DB);
   } catch (error) {
     console.error(error);
   }
-})();
+};
 
 async function createCollection() {
   await client.db("FCC").createCollection("exercise-tracker-db", {
@@ -88,6 +89,10 @@ app.post("/api/users", async (req, res) => {
   res.status(200).json(response);
 });
 
+
+
+
+
 app.post("/api/users/:_id/exercises", async (req, res) => {
   let { duration, description, date } = req.body;
   let _id = new ObjectId(req.params._id);
@@ -137,8 +142,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   if (user) {  
     if (new Date(req.query.from) != "Invalid Date" && new Date(req.query.to) != "Invalid Date") {
-    // let from = new Date(req.query.from).toISOString();
-    // let to = new Date(req.query.to).toISOString();
+      let from = new Date(req.query.from).toISOString();
+      let to = new Date(req.query.to).toISOString();
       let ag = await db
         .aggregate([
           { $match: { _id: _id }},
@@ -150,8 +155,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
                   as: "filteredLog",
                   cond: {
                     $and: [
-                      { $gte: ["$$filteredLog.date", new Date(new Date(req.query.from).toISOString())] },
-                      { $lte: ["$$filteredLog.date", new Date(new Date(req.query.to).toISOString())] },
+                      { $gte: ["$$filteredLog.date", new Date(from)] },
+                      { $lte: ["$$filteredLog.date", new Date(to)] },
                     ],
                   },  
              
@@ -170,18 +175,20 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         }
       }
 
-      ag[0].log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
+      ag[0].log.forEach(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration)})
+    
       let response = {
         _id: user._id,
         username: user.username,
-        from: new Date(req.query.from).toDateString(),
-        to: new Date(req.query.to).toDateString(),
+        from: new Date(from).toDateString(),
+        to: new Date(to).toDateString(),
         count: ag[0].log.length, 
         log: ag[0].log,
       };
+
       return res.status(200).json(response);
     } else {
-     user.log.map(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration);})
+     user.log.forEach(e=>{e.date = new Date(e.date).toDateString();e.duration = parseInt(e.duration);})
    return res.status(200).json(user);
     }
   } else {
