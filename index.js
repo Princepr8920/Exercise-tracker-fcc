@@ -165,14 +165,18 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         count: limitedLog.length,
         log: limitedLog,
       };
+      limitedLog.forEach((e) => {
+        e.date = e.date
+        e.duration = parseInt(e.duration);
+      });
       return res.status(200).json(response);
     } else {
-      // user.log.forEach((e) => {
-      //   e.date = e.date
-      //   e.duration = parseInt(e.duration);
-      // });
+      user.log.forEach((e) => {
+        e.date = e.date
+        e.duration = parseInt(e.duration);
+      });
       return res.status(200).json(user);
-    }
+    } 
   } else {
     return res.sendStatus(404);
   }
