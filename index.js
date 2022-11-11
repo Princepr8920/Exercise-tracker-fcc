@@ -135,40 +135,35 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs", async (req, res) => {
   let _id = new ObjectId(req.params._id);
   let user = await db.findOne({ _id });
-  let {from,to, limit } = req.query;
-
+  let {from,to,limit} = req.query;
+user.log.forEach(e => {
+  e.date = new Date(e.date).toDateString()
+  e.duration =  parseInt(e.duration)
+});
         if (user) {
           if (from && to) {
             let logArr = user.log;
-            let limitedLog = logArr.filter((e) =>
-              new Date(e.date).getTime() >= new Date(from).getTime() &&
-              new Date(e.date).getTime() <= new Date(to).getTime()
-                ? e
-                : ""
+            let limitedLog = logArr.filter((e) =>{
+             if(new Date(e.date).getTime() >= new Date(from).getTime() &&
+              new Date(e.date).getTime() <= new Date(to).getTime()){
+                return e
+              }
+                }
             );
+
             if (limit && limit > 0) {
               while (limitedLog.length > limit) {
                 limitedLog.pop();
               }
             }
-      
-            let a = await userId.find({
-              _id: id,
-              "log.date": {
-                $gt: new Date(2022, 11, 02, 00, 00, 00),
-                $lt: new Date(2022, 12, 02, 00, 00, 00),
-              },
-            });
-            console.log(a);
-      
-            let filtred = FILTER.filterInfo(limitedLog, ["_id"]);
+  
             let response = {
               _id: user._id,
               username: user.username,
               from: new Date(from).toDateString(),
               to: new Date(to).toDateString(),
               count: limitedLog.length,
-              log: filtred,
+              log: limitedLog,
             };
             res.status(200).json(response);
           } else {
