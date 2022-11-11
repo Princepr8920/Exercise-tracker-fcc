@@ -104,8 +104,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         description,
         date:
           new Date(date) === "Invalid Date" || date === ""
-            ? new Date()
-            : new Date(date),
+            ? new Date().toDateString()
+            : new Date(date).toDateString(),
       };
       counter += 1;
       db.findOneAndUpdate(
@@ -119,9 +119,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           let response = {
             username: value.username,
             _id: value._id,
-            date: value.log[counter - 1].date.toDateString(),
+            date: value.log[counter - 1].date,
             description: value.log[counter - 1].description,
-            duration: parseInt(value.log[counter - 1].duration),
+            duration: parseInt(value.log[counter - 1].duration)
           };
           return res.status(200).json(response);
         }
@@ -142,62 +142,47 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       new Date(req.query.from) != "Invalid Date" &&
       new Date(req.query.to) != "Invalid Date"
     ) {
-      let from = new Date(req.query.from).toISOString();
-      let to = new Date(req.query.to).toISOString();
-      let ag = await db
-        .aggregate([
-          { $match: { _id: _id } },
-          {
-            $project: {
-              log: {
-                $filter: {
-                  input: "$log",
-                  as: "filteredLog",
-                  cond: {
-                    $and: [
-                      { $gte: ["$$filteredLog.date", new Date(from)] },
-                      { $lte: ["$$filteredLog.date", new Date(to)] },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        ])
-        .toArray();
- 
-
-      if (limit && limit > 0) {
-        while (ag[0].log.length > limit) {
-          ag[0].log.pop();
-        }
-      }
-
-      ag[0].log.forEach((e) => {
-        e.date = e.date.toDateString()
-        e.duration = parseInt(e.duration);
-      });
+      let from = new Date(req.query.from).toDateString();
+      let to = new Date(req.query.to).toDateString();
+          let logArr = user.log;
+          let limitedLog = logArr.filter((e) =>
+            new Date(e.date).getTime() >= new Date(from).getTime() &&
+            new Date(e.date).getTime() <= new Date(to).getTime()
+              ? e
+              : ""
+          );
+          if (limit && limit > 0) {
+            while (limitedLog.length > limit) {
+              limitedLog.pop();
+            }
+          }
 
       let response = {
         _id: user._id,
         username: user.username,
         from: new Date(from).toDateString(),
         to: new Date(to).toDateString(),
-        count: ag[0].log.length,
-        log: ag[0].log,
+        count: limitedLog.length,
+        log: limitedLog,
       };
       return res.status(200).json(response);
     } else {
-      user.log.forEach((e) => {
-        e.date = e.date.toDateString()
-        e.duration = parseInt(e.duration);
-      });
+      // user.log.forEach((e) => {
+      //   e.date = e.date
+      //   e.duration = parseInt(e.duration);
+      // });
       return res.status(200).json(user);
     }
   } else {
     return res.sendStatus(404);
   }
 });
+
+
+
+
+
+
 
 app.get("/api/users", async (req, res) => {
   let users = await db.find().toArray();
