@@ -135,49 +135,46 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs", async (req, res) => {
   let _id = new ObjectId(req.params._id);
   let user = await db.findOne({ _id });
-  let { limit } = req.query;
+  let {from,to, limit } = req.query;
 
-  if (user) {
-    if (
-      new Date(req.query.from) != "Invalid Date" &&
-      new Date(req.query.to) != "Invalid Date"
-    ) {
-      let from = new Date(req.query.from).toDateString();
-      let to = new Date(req.query.to).toDateString();
-          let logArr = user.log;
-          let limitedLog = logArr.filter((e) =>
-            new Date(e.date).getTime() >= new Date(from).getTime() &&
-            new Date(e.date).getTime() <= new Date(to).getTime()
-              ? e
-              : ""
-          );
-          if (limit && limit > 0) {
-            while (limitedLog.length > limit) {
-              limitedLog.pop();
+        if (user) {
+          if (from && to) {
+            let logArr = user.log;
+            let limitedLog = logArr.filter((e) =>
+              new Date(e.date).getTime() >= new Date(from).getTime() &&
+              new Date(e.date).getTime() <= new Date(to).getTime()
+                ? e
+                : ""
+            );
+            if (limit && limit > 0) {
+              while (limitedLog.length > limit) {
+                limitedLog.pop();
+              }
             }
+      
+            let a = await userId.find({
+              _id: id,
+              "log.date": {
+                $gt: new Date(2022, 11, 02, 00, 00, 00),
+                $lt: new Date(2022, 12, 02, 00, 00, 00),
+              },
+            });
+            console.log(a);
+      
+            let filtred = FILTER.filterInfo(limitedLog, ["_id"]);
+            let response = {
+              _id: user._id,
+              username: user.username,
+              from: new Date(from).toDateString(),
+              to: new Date(to).toDateString(),
+              count: limitedLog.length,
+              log: filtred,
+            };
+            res.status(200).json(response);
+          } else {
+            res.status(200).json(user);
           }
-
-      let response = {
-        _id: user._id,
-        username: user.username,
-        from: new Date(from).toDateString(),
-        to: new Date(to).toDateString(),
-        count: limitedLog.length,
-        log: limitedLog,
-      };
-      limitedLog.forEach((e) => {
-        e.date = e.date
-        e.duration = parseInt(e.duration);
-      });
-      return res.status(200).json(response);
-    } else {
-      user.log.forEach((e) => {
-        e.date = e.date
-        e.duration = parseInt(e.duration);
-      });
-      return res.status(200).json(user);
-    } 
-  } else {
+        }  else {
     return res.sendStatus(404);
   }
 });
