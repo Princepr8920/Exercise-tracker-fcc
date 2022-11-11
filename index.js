@@ -119,7 +119,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           let response = {
             username: value.username,
             _id: value._id,
-            date: value.log[counter - 1].date.toDateString(),
+            date: new Date(value.log[counter - 1].date).toDateString().toString(),
             description: value.log[counter - 1].description,
             duration: parseInt(value.log[counter - 1].duration),
           };
@@ -181,8 +181,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       let response = {
         _id: user._id,
         username: user.username,
-        from: new Date(from).toDateString(),
-        to: new Date(to).toDateString(),
+        from: new Date(from).toDateString().toString(),
+        to: new Date(to).toDateString().toString(),
         count: ag[0].log.length,
         log: ag[0].log,
       };
