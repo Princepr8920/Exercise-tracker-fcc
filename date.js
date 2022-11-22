@@ -10,6 +10,7 @@ module.exports = function calcTime(currentDate,offset) {
   // create new Date object for different city
   // using supplied offset
   var nd = new Date(utc + (3600000*offset));
+  console.log(nd.toDateString())
 
   // return time as a string
   return nd.toDateString();
