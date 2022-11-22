@@ -140,7 +140,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   if (user) {
     let { username, _id, log } = user;
-
     if (req.query.from != undefined && req.query.to != undefined) {
       log = log.filter((ele) => {
         let eleDate = new Date(ele.date).getTime();
@@ -162,13 +161,11 @@ app.get("/api/users/:_id/logs", async (req, res) => {
         date: new Date(ele.date).toDateString()
       };
     });
-
-    console.log(log)
+ 
     let count = 0;
     if (log != undefined) count = log.length;
-    return res.json({ username, _id, log, count });
+    return res.json({ username, _id, count, log });
   }
-
   return res.sendStatus(404);
 });
 
@@ -181,5 +178,4 @@ app.get("/api/users", async (req, res) => {
     res.sendStatus(404);
   }
 });
-
-const a = new Date("2017-01-01T00:00:00.000+00:00").toDateString();
+    
