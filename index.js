@@ -158,11 +158,12 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     log = log.map((ele) => {
       return {
         description: ele.description,
-        duration: ele.duration,
-        date: new Date(ele.date).toDateString(),
+        duration: parseInt(ele.duration),
+        date: setDate(ele.date,+5.5) 
       };
     });
 
+    console.log(log)
     let count = 0;
     if (log != undefined) count = log.length;
     return res.json({ username, _id, log, count });
