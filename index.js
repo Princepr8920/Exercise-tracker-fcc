@@ -167,12 +167,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       count = log.length
     res.json({username,_id,log,count});
  
-    } else {
-      user.log.forEach((e) => {
-        e.date = setDate(e.date,+5.5)
-        e.duration = parseInt(e.duration);
-      });
-      return res.status(200).json(user);
     }
   } else {
     return res.sendStatus(404);
