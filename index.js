@@ -11,8 +11,7 @@ app.use(cors());
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
-const setDate = require("./date")
-
+const setDate = require("./date");
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -140,40 +139,37 @@ app.get("/api/users/:_id/logs", async (req, res) => {
   let { limit } = req.query;
 
   if (user) {
-    if (
-      new Date(req.query.from) != "Invalid Date" &&
-      new Date(req.query.to) != "Invalid Date"
-    ) {let {username,_id,log} = user;
+    let { username, _id, log } = user;
 
-    if(req.query.from!=undefined && req.query.to!=undefined){
-      log = log.filter((ele)=>{
-        let eleDate = (new Date(ele.date)).getTime();
-        let fromDate = (new Date(req.query.from+" 00:00:00")).getTime();
-        let toDate = (new Date(req.query.to+" 00:00:00")).getTime();
+    if (req.query.from != undefined && req.query.to != undefined) {
+      log = log.filter((ele) => {
+        let eleDate = new Date(ele.date).getTime();
+        let fromDate = new Date(req.query.from + " 00:00:00").getTime();
+        let toDate = new Date(req.query.to + " 00:00:00").getTime();
 
         return eleDate >= fromDate && eleDate <= toDate;
-      })
+      });
     }
-    if(limit!=undefined){
-      log = log.slice(0,limit);
+
+    if (limit != undefined) {
+      log = log.slice(0, limit);
     }
-    
-    log = log.map((ele)=>{
-      return {description:ele.description,duration:ele.duration,date:new Date(ele.date).toDateString()};
-    })
+
+    log = log.map((ele) => {
+      return {
+        description: ele.description,
+        duration: ele.duration,
+        date: new Date(ele.date).toDateString(),
+      };
+    });
 
     let count = 0;
-    if(log!=undefined)
-      count = log.length
-    res.json({username,_id,log,count});
- 
-    }
-  } else {
-    return res.sendStatus(404);
+    if (log != undefined) count = log.length;
+    return res.json({ username, _id, log, count });
   }
+
+  return res.sendStatus(404);
 });
-
-
 
 app.get("/api/users", async (req, res) => {
   let users = await db.find().toArray();
@@ -185,8 +181,4 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-
-
-
-const a = new Date("2017-01-01T00:00:00.000+00:00").toDateString()
- 
+const a = new Date("2017-01-01T00:00:00.000+00:00").toDateString();
