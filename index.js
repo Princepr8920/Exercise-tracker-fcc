@@ -105,8 +105,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         description,
         date:
           new Date(date) === "Invalid Date" || date === ""
-            ? setDate(new Date(),+5.5)
-            : setDate(date,+5.5),
+            ? new Date().toDateString()
+            : new Date(date + " 00:00:00").toDateString(),
       };
       counter += 1;
       db.findOneAndUpdate(
@@ -120,7 +120,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           let response = {
             username: value.username,
             _id: value._id,
-            date: setDate(value.log[counter - 1].date,+5.5),
+            date: new Date(value.log[counter - 1].date + " 00:00:00").toDateString(),
             description: value.log[counter - 1].description,
             duration: parseInt(value.log[counter - 1].duration),
           };
@@ -140,9 +140,10 @@ app.get("/api/users/:_id/logs", async (req, res) => {
 
   if (user) {
     let { username, _id, log } = user;
+
     if (req.query.from != undefined && req.query.to != undefined) {
       log = log.filter((ele) => {
-        let eleDate = new Date(ele.date).getTime();
+        let eleDate = new Date(ele.date + " 00:00:00").getTime();
         let fromDate = new Date(req.query.from + " 00:00:00").getTime();
         let toDate = new Date(req.query.to + " 00:00:00").getTime();
 
@@ -158,14 +159,16 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       return {
         description: ele.description,
         duration: parseInt(ele.duration),
-        date: setDate(ele.date,+5.5)
+        date: new Date(ele.date + " 00:00:00").toDateString()
       };
     });
 
+    console.log(log)
     let count = 0;
     if (log != undefined) count = log.length;
     return res.json({ username, _id, count, log });
   }
+
   return res.sendStatus(404);
 });
 
