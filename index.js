@@ -143,52 +143,30 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     if (
       new Date(req.query.from) != "Invalid Date" &&
       new Date(req.query.to) != "Invalid Date"
-    ) {
-      let from = new Date(req.query.from).toDateString();
-      let to = new Date(req.query.to).toDateString();
-      let ag = await db
-        .aggregate([
-          { $match: { _id: _id } },
-          {
-            $project: {
-              log: {
-                $filter: {
-                  input: "$log",
-                  as: "filteredLog",
-                  cond: {
-                    $and: [
-                      { $gte: ["$$filteredLog.date", new Date(from)] },
-                      { $lte: ["$$filteredLog.date", new Date(to)] },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        ])
-        .toArray();
+    ) {let {username,_id,log} = user;
+
+    if(req.query.from!=undefined && req.query.to!=undefined){
+      log = log.filter((ele)=>{
+        let eleDate = (new Date(ele.date)).getTime();
+        let fromDate = (new Date(req.query.from+" 00:00:00")).getTime();
+        let toDate = (new Date(req.query.to+" 00:00:00")).getTime();
+
+        return eleDate >= fromDate && eleDate <= toDate;
+      })
+    }
+    if(limit!=undefined){
+      log = log.slice(0,limit);
+    }
+    
+    log = log.map((ele)=>{
+      return {description:ele.description,duration:ele.duration,date:new Date(ele.date).toDateString()};
+    })
+
+    let count = 0;
+    if(log!=undefined)
+      count = log.length
+    res.json({username,_id,log,count});
  
-
-      if (limit && limit > 0) {
-        while (ag[0].log.length > limit) {
-          ag[0].log.pop();
-        }
-      }
-
-      ag[0].log.forEach((e) => {
-        e.date = setDate(e.date,+5.5)
-        e.duration = parseInt(e.duration);
-      });
-
-      let response = {
-        _id: user._id,
-        username: user.username,
-        from: new Date(from).toDateString(),
-        to: new Date(to).toDateString(),
-        count: ag[0].log.length,
-        log: ag[0].log,
-      };
-      return res.status(200).json(response);
     } else {
       user.log.forEach((e) => {
         e.date = setDate(e.date,+5.5)
