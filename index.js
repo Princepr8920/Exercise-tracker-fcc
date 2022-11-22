@@ -105,8 +105,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
         description,
         date:
           new Date(date) === "Invalid Date" || date === ""
-            ? new Date()
-            : new Date(date),
+            ? new Date().toDateString()
+            : new Date(date).toDateString(),
       };
       counter += 1;
       db.findOneAndUpdate(
