@@ -159,7 +159,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       return {
         description: ele.description,
         duration: parseInt(ele.duration),
-        date: setDate(ele.date,+5.5) 
+        date: new Date(ele.date).toDateString()
       };
     });
 
