@@ -11,6 +11,8 @@ app.use(cors());
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
+const setDate = require("./date")
+
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -119,7 +121,7 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
           let response = {
             username: value.username,
             _id: value._id,
-            date: new Date(value.log[counter - 1].date).toDateString().toString(),
+            date: new Date(value.log[counter - 1].date).toDateString(),
             description: value.log[counter - 1].description,
             duration: parseInt(value.log[counter - 1].duration),
           };
@@ -142,8 +144,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       new Date(req.query.from) != "Invalid Date" &&
       new Date(req.query.to) != "Invalid Date"
     ) {
-      let from = new Date(req.query.from).toISOString();
-      let to = new Date(req.query.to).toISOString();
+      let from = new Date(req.query.from).toDateString();
+      let to = new Date(req.query.to).toDateString();
       let ag = await db
         .aggregate([
           { $match: { _id: _id } },
@@ -174,22 +176,22 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       }
 
       ag[0].log.forEach((e) => {
-        e.date = new Date(e.date).toDateString().toString()
+        e.date = setDate(e.date,+5.5)
         e.duration = parseInt(e.duration);
       });
 
       let response = {
         _id: user._id,
         username: user.username,
-        from: new Date(from).toDateString().toString(),
-        to: new Date(to).toDateString().toString(),
+        from: new Date(from).toDateString(),
+        to: new Date(to).toDateString(),
         count: ag[0].log.length,
         log: ag[0].log,
       };
       return res.status(200).json(response);
     } else {
       user.log.forEach((e) => {
-        e.date = new Date(e.date).toDateString().toString()
+        e.date = setDate(e.date,+5.5)
         e.duration = parseInt(e.duration);
       });
       return res.status(200).json(user);
@@ -198,6 +200,8 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     return res.sendStatus(404);
   }
 });
+
+
 
 app.get("/api/users", async (req, res) => {
   let users = await db.find().toArray();
@@ -208,3 +212,9 @@ app.get("/api/users", async (req, res) => {
     res.sendStatus(404);
   }
 });
+
+
+
+
+const a = new Date("2017-01-01T00:00:00.000+00:00").toDateString()
+ 
