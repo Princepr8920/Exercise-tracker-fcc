@@ -62,7 +62,7 @@ async function createCollection() {
                   bsonType: "string",
                   description: "des must be a string and is required",
                 },
-                duration: {
+                duration: { 
                   bsonType: "number",
                   description: "duration must be a number and is required",
                 },
