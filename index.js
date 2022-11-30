@@ -10,8 +10,7 @@ require("dotenv").config();
 app.use(cors());
 app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static("public"));
-const setDate = require("./date");
+app.use(express.static("public")); 
 
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -140,12 +139,12 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     let { username, _id, log } = user;
 
     if (req.query.from != undefined && req.query.to != undefined) {
-      log = log.filter((ele) => {
-        let eleDate = new Date(ele.date).getTime();
+      log = log.filter((e) => {
+        let exerciseDate = new Date(e.date).getTime();
         let fromDate = new Date(req.query.from + " 00:00:00").getTime();
         let toDate = new Date(req.query.to + " 00:00:00").getTime();
 
-        return eleDate >= fromDate && eleDate <= toDate;
+        return exerciseDate >= fromDate && exerciseDate <= toDate;
       });
     }
 
@@ -153,11 +152,11 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       log = log.slice(0, limit);
     }
 
-    log = log.map((ele) => {
+    log = log.map((e) => {
       return {
-        description: ele.description,
-        duration: parseInt(ele.duration),
-        date: new Date(ele.date).toDateString()
+        description: e.description,
+        duration: parseInt(e.duration),
+        date: new Date(e.date).toDateString()
       };
     });
 
