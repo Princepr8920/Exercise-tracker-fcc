@@ -1,11 +1,11 @@
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const { MongoClient, ObjectId } = require("mongodb");
-const bodyParser = require("body-parser");
-const logger = require("morgan");
-const filterdInfo = require("./filter");
-const FILTER = new filterdInfo();
+const express = require("express"),
+ app = express(),
+ cors = require("cors"),
+ { MongoClient, ObjectId } = require("mongodb"),
+ bodyParser = require("body-parser"),
+ logger = require("morgan"),
+ filterdInfo = require("./filter"),
+  FILTER = new filterdInfo();
 require("dotenv").config();
 app.use(cors());
 app.use(logger("dev"));
