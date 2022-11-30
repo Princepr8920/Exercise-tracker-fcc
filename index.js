@@ -26,7 +26,7 @@ const client = new MongoClient(process.env.MY_DB);
 async function connectToDatabase() {
   try {
     await client.connect();
-    console.log("Database connected successfully 🧠");
+    console.log("Database Connected Successfully 🧠");
     let collections = await client.db("FCC").listCollections().toArray();
     let collectionExists = collections.map((e) => e.name);
     !collectionExists.includes("exercise-tracker-db")
