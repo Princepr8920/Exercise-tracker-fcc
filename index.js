@@ -160,7 +160,6 @@ app.get("/api/users/:_id/logs", async (req, res) => {
       };
     });
 
-    console.log(log)
     let count = 0;
     if (log != undefined) count = log.length;
     return res.json({ username, _id, count, log });
@@ -175,7 +174,7 @@ app.get("/api/users", async (req, res) => {
     let filtred = FILTER.filterInfo(users, ["log", "count"]);
     res.status(200).json(filtred);
   } else {
-    res.sendStatus(404);
+    res.sendStatus(404); 
   }
 });
     
